@@ -105,10 +105,6 @@ function sparqlDataToSimpleData(response) {
     return {data: convertedData, columns: columns};
 }
 
-function getQueryServiceUrl() {
-    return window.queryServiceURL || 'https://query.wikidata.org';
-}
-
 function sparqlToDataTable(sparql, element, options={}) {
     // Options: linkPrefixes={}, paging=true
     var linkPrefixes = (typeof options.linkPrefixes === 'undefined') ? {} : options.linkPrefixes;

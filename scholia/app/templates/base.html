@@ -19,7 +19,10 @@
 
 <script>
 	// make the url globally accessible
-	window.queryServiceURL = '{{ queryServiceURL }}'
+	function getQueryServiceUrl() {
+		return '{{ queryServiceURL }}' || 'https://query.wikidata.org';
+	}
+
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.dataTables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='scholia.js') }}"></script>
@@ -108,7 +111,7 @@
 
      });
 
-     var endpointUrl = 'https://query.wikidata.org/sparql';
+     var endpointUrl = getQueryServiceUrl() + '/sparql';
      var query = `
     SELECT DISTINCT ?aspect 
     WHERE {

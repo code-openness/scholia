@@ -934,9 +934,7 @@ def lipidmaps_to_qs(lmid):
     query = """select ?item
                where {{ ?item wdt:P2063 "{lmid}" }}""".format(
         lmid=lmid)
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['item']['value'][31:]
