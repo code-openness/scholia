@@ -32,7 +32,7 @@ import requests
 from ..qs import paper_to_quickstatements
 from ..query import iso639_to_q, issn_to_qs
 from ..utils import escape_string
-
+from ..wdqs import WDQS
 
 USER_AGENT = 'Scholia'
 
@@ -46,9 +46,6 @@ SELECT ?paper WHERE {{
   BIND(COALESCE(?full_text_url, ?url, ?label, ?title) AS ?paper)
 }}
 """)
-
-# SPARQL Endpoint for Wikidata Query Service
-WDQS_URL = 'https://query.wikidata.org/sparql'
 
 
 def paper_to_q(paper):
@@ -87,9 +84,7 @@ def paper_to_q(paper):
         label=title, title=title,
         url=paper['url'])
 
-    response = requests.get(WDQS_URL,
-                            params={'query': query, 'format': 'json'},
-                            headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()['results']['bindings']
 
     if len(data) == 0 or not data[0]:

@@ -17,6 +17,10 @@
 {% block scripts %}
 {{super()}}
 
+<script>
+	// make the url globally accessible
+	window.queryServiceURL = '{{ queryServiceURL }}'
+</script>
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.dataTables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='scholia.js') }}"></script>
 

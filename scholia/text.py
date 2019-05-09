@@ -33,7 +33,7 @@ import re
 
 from simplejson import JSONDecodeError
 
-import requests
+from .wdqs import WDQS
 
 
 TOPIC_LABELS_SPARQL = """
@@ -121,20 +121,16 @@ class TextToTopicQText():
         If this also fails, then the method will raise an exception.
 
         """
-        response = requests.get(
-            'https://query.wikidata.org/sparql',
-            params={'query': TOPIC_LABELS_SPARQL, 'format': 'json'},
-            headers=self.headers)
+        response = WDQS.sparql_get(TOPIC_LABELS_SPARQL,
+                                   headers=self.headers)
 
         try:
             response_data = response.json()
         except JSONDecodeError:
             # In some cases a timeout may occur in the middle of a response,
             # making the JSON returned invalid.
-            response = requests.get(
-                'https://query.wikidata.org/sparql',
-                params={'query': TOPIC_LABELS_SPARQL, 'format': 'json'},
-                headers=self.headers)
+            response = WDQS.sparql_get(TOPIC_LABELS_SPARQL,
+                                       headers=self.headers)
             try:
                 response_data = response.json()
             except JSONDecodeError:

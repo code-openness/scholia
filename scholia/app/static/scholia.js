@@ -3,12 +3,11 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-
 function convertDataTableData(data, columns, linkPrefixes={}) {
     // Handle 'Label' columns.
 
     // var linkPrefixes = (options && options.linkPrefixes) || {};
-    
+
     var convertedData = [];
     var convertedColumns = [];
     for (var i = 0 ; i < columns.length ; i++) {
@@ -31,12 +30,12 @@ function convertDataTableData(data, columns, linkPrefixes={}) {
 
 	    } else if (key + 'Label' in data[i]) {
 		convertedRow[key] = '<a href="' +
-		    (linkPrefixes[key] || "../") + 
+		    (linkPrefixes[key] || "../") +
 		    data[i][key].substr(31) +
 		    '">' + data[i][key + 'Label'] + '</a>';
 	    } else if (key.substr(-5) == 'Label') {
 		// pass
-		
+
 	    } else if (key + 'Url' in data[i]) {
 		convertedRow[key] = '<a href="' +
 		    data[i][key + 'Url'] +
@@ -48,13 +47,13 @@ function convertDataTableData(data, columns, linkPrefixes={}) {
 	    } else if (key.substr(-3) == 'url') {
 		// Convert URL to a link
 		convertedRow[key] = "<a href='" +
-		    data[i][key] + "'>" + 
+		    data[i][key] + "'>" +
 		    $("<div>").text(data[i][key]).html() + '</a>';
 
 	    } else if (key == 'orcid') {
 		// Add link to ORCID website
 		convertedRow[key] = '<a href="https://orcid.org/' +
-		    data[i][key] + '">' + 
+		    data[i][key] + '">' +
 		    data[i][key] + '</a>';
 
 	    } else if (key == 'doi') {
@@ -106,13 +105,16 @@ function sparqlDataToSimpleData(response) {
     return {data: convertedData, columns: columns};
 }
 
+function getQueryServiceUrl() {
+    return window.queryServiceURL || 'https://query.wikidata.org';
+}
 
 function sparqlToDataTable(sparql, element, options={}) {
     // Options: linkPrefixes={}, paging=true
     var linkPrefixes = (typeof options.linkPrefixes === 'undefined') ? {} : options.linkPrefixes;
     var paging = (typeof options.paging === 'undefined') ? true : options.paging;
-    
-    var url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=" + 
+
+    var url = getQueryServiceUrl() + "/bigdata/namespace/wdq/sparql?query=" +
 	encodeURIComponent(sparql) + '&format=json';
 
     $.getJSON(url, function(response) {
@@ -129,18 +131,18 @@ function sparqlToDataTable(sparql, element, options={}) {
 	    columns.push(column)
 	}
 
-	table = $(element).DataTable({ 
+	table = $(element).DataTable({
 	    data: convertedData.data,
 	    columns: columns,
 	    lengthMenu: [[10, 25, 100, -1], [10, 25, 100, "All"]],
 	    ordering: true,
-	    order: [], 
+	    order: [],
 	    paging: paging,
 	});
 
 	$(element).append(
-	    '<caption><a href="https://query.wikidata.org/#' + 
-		encodeURIComponent(sparql) +	
+		'<caption><a href="' + getQueryServiceUrl() + '/#' +
+		encodeURIComponent(sparql) +
 		'">Edit on query.Wikidata.org</a></caption>');
     });
 }

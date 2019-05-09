@@ -35,8 +35,6 @@ References
 
 from __future__ import print_function
 
-import requests
-
 from dateutil.parser import parse as parse_datetime
 
 from email.utils import formatdate
@@ -48,6 +46,8 @@ from xml.sax.saxutils import escape
 from re import sub
 
 from six import u
+
+from .wdqs import WDQS
 
 
 WORK_ITEM_RSS = u("""
@@ -300,9 +300,7 @@ def wb_get_author_latest_works(q):
                 'type="application/rss+xml" />\n'
 
     query = AUTHOR_WORKS_SPARQL_QUERY.format(q=q)
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params)
+    response = WDQS.sparql_get(query)
 
     if response.ok:
         data = response.json()
@@ -349,9 +347,7 @@ def wb_get_venue_latest_works(q):
                 'type="application/rss+xml" />\n'
 
     query = VENUE_SPARQL_QUERY.format(q=q)
-    url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params)
+    response = WDQS.bigdata_sparql_get(query)
     data = response.json()
 
     rss_body += entities_to_works_rss(data['results']['bindings'])
@@ -393,9 +389,7 @@ def wb_get_topic_latest_works(q):
                 'type="application/rss+xml" />\n'
 
     query = TOPIC_SPARQL_QUERY.format(q=q)
-    url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params)
+    response = WDQS.bigdata_sparql_get(query)
     data = response.json()
 
     rss_body += entities_to_works_rss(data['results']['bindings'])
@@ -439,9 +433,7 @@ def wb_get_organization_latest_works(q):
                 'type="application/rss+xml" />\n'
 
     query = ORGANIZATION_SPARQL_QUERY.format(q=q)
-    url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params)
+    response = WDQS.bigdata_sparql_get(query)
     data = response.json()
 
     rss_body += entities_to_works_rss(data['results']['bindings'])
@@ -485,9 +477,7 @@ def wb_get_sponsor_latest_works(q):
                 'type="application/rss+xml" />\n'
 
     query = ORGANIZATION_SPARQL_QUERY.format(q=q)
-    url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params)
+    response = WDQS.bigdata_sparql_get(query)
     data = response.json()
 
     rss_body += entities_to_works_rss(data['results']['bindings'])
