@@ -7,9 +7,11 @@ from flask import Flask
 from flask_bootstrap import Bootstrap, StaticCDN
 
 from ..text import load_text_to_topic_q_text
+from ..wdqs import WDQS
 
 
-def create_app(text_to_topic_q_text_enabled=True, third_parties_enabled=False):
+def create_app(text_to_topic_q_text_enabled=True, third_parties_enabled=False,
+               queryServiceURL='https://query.wikidata.org'):
     """Create webapp.
 
     Factory for webapp.
@@ -25,6 +27,8 @@ def create_app(text_to_topic_q_text_enabled=True, third_parties_enabled=False):
         Determines whether third-party webservices can be enabled.
         Due to privacy reason this is disabled by default [default: false].
 
+    queryServiceURL : string
+        URL to the Wikidata Query Service
     Returns
     -------
     app : flask.app.Flask
@@ -48,4 +52,6 @@ def create_app(text_to_topic_q_text_enabled=True, third_parties_enabled=False):
 
     app.third_parties_enabled = third_parties_enabled
 
+    WDQS.setURL(queryServiceURL)
+    WDQS.initFlaskApp(app)
     return app

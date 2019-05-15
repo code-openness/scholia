@@ -26,9 +26,9 @@ from os import write
 
 import signal
 
-import requests
-
 from six import b, u
+
+from .wdqs import WDQS
 
 
 BIBLIOGRAPHY_SPARQL_QUERY = """
@@ -104,9 +104,7 @@ def q_to_bibliography_templates(q):
 
     """
     query = BIBLIOGRAPHY_SPARQL_QUERY.format(q=q)
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params)
+    response = WDQS.sparql_get(query)
     data = response.json()
 
     wikitext = ('<!-- Generated with scholia.wikipedia '

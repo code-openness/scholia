@@ -43,6 +43,7 @@ import requests
 
 from ..qs import paper_to_quickstatements
 from ..utils import escape_string
+from ..wdqs import WDQS
 
 
 PAPER_TO_Q_QUERY = u("""
@@ -57,7 +58,6 @@ SELECT ?paper WHERE {{
 
 URL_BASE = "https://papers.nips.cc"
 
-WDQS_URL = 'https://query.wikidata.org/sparql'
 
 # Year should be the nominal year, - not the year of publication
 YEAR_TO_Q = {
@@ -135,8 +135,7 @@ def paper_to_q(paper):
         label=title, title=title,
         url=paper['url'], full_text_url=paper['full_text_url'])
 
-    response = requests.get(WDQS_URL,
-                            params={'query': query, 'format': 'json'})
+    response = WDQS.sparql_get(query)
     data = response.json()['results']['bindings']
 
     if len(data) == 0 or not data[0]:

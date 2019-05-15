@@ -42,11 +42,11 @@ from __future__ import absolute_import, division, print_function
 
 from random import random
 
-import requests
-
 from simplejson import JSONDecodeError
 
 from six import u
+
+from .wdqs import WDQS
 
 USER_AGENT = 'Scholia'
 
@@ -104,9 +104,7 @@ def query_to_bindings(query):
         Data as list of dicts.
 
     """
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return data['results']['bindings']
@@ -134,9 +132,7 @@ def arxiv_to_qs(arxiv):
     query = 'select ?work where {{ ?work wdt:P818 "{arxiv}" }}'.format(
         arxiv=escape_string(arxiv))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['work']['value'][31:]
@@ -183,10 +179,7 @@ def count_scientific_articles():
     """
     query = """
         SELECT (COUNT(*) AS ?count) WHERE { [] wdt:P31 wd:Q13442814 }"""
-
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return int(data['results']['bindings'][0]['count']['value'])
@@ -222,9 +215,7 @@ def doi_to_qs(doi):
     query = 'select ?work where {{ ?work wdt:P356 "{doi}" }}'.format(
         doi=escape_string(doi.upper()))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['work']['value'][31:]
@@ -264,9 +255,7 @@ def iso639_to_q(language):
     else:
         raise ValueError('ISO639 language code not recognized')
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
     qs = [item['language']['value'][31:]
           for item in data['results']['bindings']]
@@ -308,9 +297,7 @@ def pubmed_to_qs(pmid):
     query = 'select ?work where {{ ?work wdt:P698 "{pmid}" }}'.format(
         pmid=pmid)
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['work']['value'][31:]
@@ -339,9 +326,7 @@ def issn_to_qs(issn):
     query = 'select ?author where {{ ?author wdt:P236 "{issn}" }}'.format(
         issn=escape_string(issn))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['author']['value'][31:]
@@ -370,9 +355,7 @@ def orcid_to_qs(orcid):
     query = 'select ?author where {{ ?author wdt:P496 "{orcid}" }}'.format(
         orcid=escape_string(orcid))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['author']['value'][31:]
@@ -401,9 +384,7 @@ def mesh_to_qs(meshid):
     query = 'select ?cmp where {{ ?cmp wdt:P486 "{meshid}" }}'.format(
         meshid=meshid)
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['cmp']['value'][31:]
@@ -435,9 +416,7 @@ def q_to_label(q, language='en'):
         FILTER (LANG(?label) = "{language}") }}""".format(
         q=q, language=language)
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     results = data['results']['bindings']
@@ -495,8 +474,6 @@ def search_article_titles(q, search_string=None):
     # addition during query.
     article_count = count_scientific_articles() + 1000
 
-    url = 'https://query.wikidata.org/sparql'
-
     batch_size = 500000
     loops = article_count // batch_size + 1
 
@@ -507,8 +484,7 @@ def search_article_titles(q, search_string=None):
             batch_size=batch_size, offset=offset,
             label=search_string.lower(), q=q)
 
-        params = {'query': query, 'format': 'json'}
-        response = requests.get(url, params=params, headers=HEADERS)
+        response = WDQS.sparql_get(query, headers=HEADERS)
         data = response.json()
         batch_results = [
             {
@@ -567,9 +543,7 @@ def viaf_to_qs(viaf):
     query = 'select ?author where {{ ?author wdt:P214 "{viaf}" }}'.format(
         viaf=escape_string(viaf))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['author']['value'][31:]
@@ -601,9 +575,7 @@ def q_to_class(q):
     query = 'SELECT ?class {{ wd:{q} wdt:P31 ?class }}'.format(
         q=escape_string(q))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     try:
         data = response.json()
     except JSONDecodeError:
@@ -766,9 +738,7 @@ def q_to_class(q):
         query = 'select ?class where {{ wd:{q} wdt:P279+ ?class }}'.format(
             q=escape_string(q))
 
-        url = 'https://query.wikidata.org/sparql'
-        params = {'query': query, 'format': 'json'}
-        response = requests.get(url, params=params, headers=HEADERS)
+        response = WDQS.sparql_get(query, headers=HEADERS)
         data = response.json()
         parents = [item['class']['value'][31:]
                    for item in data['results']['bindings']]
@@ -808,9 +778,7 @@ def twitter_to_qs(twitter):
                where {{ ?item wdt:P2002 "{twitter}" }}""".format(
         twitter=escape_string(twitter))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['item']['value'][31:]
@@ -841,9 +809,7 @@ def github_to_qs(github):
                where {{ ?item wdt:P2037 "{github}" }}""".format(
         github=escape_string(github))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['item']['value'][31:]
@@ -874,9 +840,7 @@ def inchikey_to_qs(inchikey):
                where {{ ?item wdt:P235 "{inchikey}" }}""".format(
         inchikey=escape_string(inchikey))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['item']['value'][31:]
@@ -907,9 +871,7 @@ def cordis_to_qs(cordis):
                where {{ ?item wdt:P3400 "{cordis}" }}""".format(
         cordis=escape_string(cordis))
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['item']['value'][31:]
@@ -940,9 +902,7 @@ def cas_to_qs(cas):
                where {{ ?item wdt:P231 "{cas}" }}""".format(
         cas=cas)
 
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['item']['value'][31:]
@@ -974,9 +934,7 @@ def lipidmaps_to_qs(lmid):
     query = """select ?item
                where {{ ?item wdt:P2063 "{lmid}" }}""".format(
         lmid=lmid)
-    url = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['item']['value'][31:]
@@ -1008,9 +966,7 @@ def website_to_qs(url):
     query = 'SELECT ?work WHERE {{ ?work wdt:P856 <{url}> }}'.format(
         url=url.strip())
 
-    url_ = 'https://query.wikidata.org/sparql'
-    params = {'query': query, 'format': 'json'}
-    response = requests.get(url_, params=params, headers=HEADERS)
+    response = WDQS.sparql_get(query, headers=HEADERS)
     data = response.json()
 
     return [item['work']['value'][31:]
